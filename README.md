@@ -1,7 +1,7 @@
 # Pokémon Bank — Sistema Bancario Simulado
-Proyecto académico que simula el funcionamiento básico de un sistema bancario.
-Este mismo incluye backend con reglas de negocio y un frontend sencillo para la interfaz.
+Proyecto académico que simula el funcionamiento básico de un sistema bancario.    Este mismo incluye backend con reglas de negocio y un frontend sencillo para la interfaz.
 
+---------------------------------------
 
 ## Tecnologías
 
@@ -80,4 +80,8 @@ Reglas de negocio:
 - Saldo máximo: 120,000
 - Transferencias con saldo suficiente
 - No transferencias a la misma cuenta
+<<<<<<< HEAD
 - Beneficiarios únicos por usuario
+=======
+- Beneficiarios únicos por usuario
+>>>>>>> 8697e9ba246f8a248474f9974c184c2925d5e4fa
