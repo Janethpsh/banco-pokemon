@@ -1,4 +1,3 @@
-// backend/src/auth/controller.js
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
@@ -14,7 +13,6 @@ export async function register(req, res) {
       return fail(res, "Faltan datos: nombre_completo, correo, password", 400);
     }
 
-    // ¿Ya existe ese correo?
     const [exists] = await pool.query(
       "SELECT id FROM usuarios WHERE correo = ? LIMIT 1",
       [correo]
@@ -71,7 +69,7 @@ export async function login(req, res) {
     const okPass = await bcrypt.compare(password, user.password_hash);
     if (!okPass) return fail(res, "Credenciales inválidas", 401);
 
-    // ✅ 10 minutos exactos
+    // expiración de los 10 min (del token)
     const expiresIn = "10m";
 
     const token = jwt.sign(
@@ -80,7 +78,6 @@ export async function login(req, res) {
       { expiresIn }
     );
 
-    // Para que puedas comprobarlo fácil en Postman
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     return ok(res, { token, expires_in: expiresIn, expires_at: expiresAt }, "Login OK");

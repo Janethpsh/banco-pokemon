@@ -1,19 +1,10 @@
-// backend/src/account/controller.js
 import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { ok, fail } from "../utils/response.js";
 
-/**
- * Reglas del proyecto:
- * - SALDO_MAXIMO (tope final): 120,000 pokemonedas
- * - CASH-IN (agregar dinero): si el usuario intenta meter más, se AJUSTA al faltante
- *   Ej: saldo=65k, pide=100k => ajustado=55k (para llegar a 120k)
- */
+
 const SALDO_MAXIMO = 120000;
 
-/**
- * Helper: trae la cuenta del usuario logueado
- */
 async function getCuentaDelUsuario(userId) {
   const [rows] = await pool.query(
     `SELECT c.id, c.usuario_id, c.saldo, u.correo, u.numero_cuenta, u.nombre_completo
@@ -26,9 +17,7 @@ async function getCuentaDelUsuario(userId) {
   return rows.length ? rows[0] : null;
 }
 
-/**
- * GET /account/me
- */
+/* GET /account/me */
 export async function me(req, res) {
   try {
     const cuenta = await getCuentaDelUsuario(req.userId);
@@ -55,9 +44,7 @@ export async function me(req, res) {
   }
 }
 
-/**
- * GET /account/saldo
- */
+/* GET /account/saldo */
 export async function saldo(req, res) {
   try {
     const cuenta = await getCuentaDelUsuario(req.userId);
@@ -69,10 +56,7 @@ export async function saldo(req, res) {
   }
 }
 
-/**
- * POST /account/agregar-dinero
- * Body: { "monto": number }
- */
+/* POST /account/agregar-dinero */
 export async function agregarDinero(req, res) {
   try {
     const monto = Number(req.body?.monto);
@@ -95,7 +79,7 @@ export async function agregarDinero(req, res) {
       );
     }
 
-    // Ajuste automático para no pasarse del saldo máximo
+    // no pasarse del saldo máximo
     const montoAjustado = Math.min(monto, faltante);
 
     await pool.query(`UPDATE cuentas SET saldo = saldo + ? WHERE id = ?`, [
@@ -103,7 +87,7 @@ export async function agregarDinero(req, res) {
       cuenta.id,
     ]);
 
-    // ✅ Registrar movimiento tipo DEPOSITO (cash-in) con concepto
+    // Registrar movimiento tipo DEPOSITO (cash-in)
     await pool.query(
       `INSERT INTO transacciones
         (id, tipo, monto, cuenta_origen_id, cuenta_destino_id, concepto, fecha_creacion)
@@ -134,9 +118,7 @@ export async function agregarDinero(req, res) {
   }
 }
 
-/**
- * POST /account/depositar (opcional)
- */
+/* POST /account/depositar */
 export async function depositar(req, res) {
   try {
     const monto = Number(req.body?.monto);
@@ -161,7 +143,7 @@ export async function depositar(req, res) {
       cuenta.id,
     ]);
 
-    // Registrar movimiento tipo DEPOSITO con concepto
+    // Registrar movimiento tipo DEPOSITO
     await pool.query(
       `INSERT INTO transacciones
         (id, tipo, monto, cuenta_origen_id, cuenta_destino_id, concepto, fecha_creacion)
@@ -180,9 +162,7 @@ export async function depositar(req, res) {
   }
 }
 
-/**
- * GET /account/movimientos?page=1&limit=5
- */
+/* GET /account/movimientos?page=1&limit=5 */
 export async function movimientos(req, res) {
   try {
     const page = Math.max(1, parseInt(req.query.page || "1", 10));
@@ -202,7 +182,7 @@ export async function movimientos(req, res) {
     const total = Number(totalRows[0]?.total || 0);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    // ✅ NUEVO: traer t.concepto
+    // concepto
     const [rows] = await pool.query(
       `SELECT
          t.id,
@@ -239,7 +219,6 @@ export async function movimientos(req, res) {
       if (r.tipo === "DEPOSITO") {
         contraparte = { alias: "Efectivo", correo: null, numero_cuenta: null };
       } else {
-        // Si es salida, contraparte es destino; si es entrada, contraparte es origen
         cuenta_contraparte_id = esEntrada ? r.cuenta_origen_id : r.cuenta_destino_id;
 
         if (cuenta_contraparte_id) {
@@ -271,7 +250,7 @@ export async function movimientos(req, res) {
         }
       }
 
-      // ✅ Concepto REAL (si existe en DB). Si viene null/vacío, usa default.
+      // Sigue siendo concepto. Si viene null/vacío, usa default.
       const conceptoDB = (r.concepto ?? "").toString().trim();
       const conceptoFallback =
         r.tipo === "DEPOSITO"

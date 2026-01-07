@@ -1,4 +1,3 @@
-// backend/src/transfers/controller.js
 import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { ok, fail } from "../utils/response.js";
@@ -35,8 +34,6 @@ export async function transferir(req, res) {
     const monto = Number(req.body?.monto);
     const guardar = Boolean(req.body?.guardar_beneficiario);
     const alias = String(req.body?.alias || "").trim();
-
-    // ✅ NUEVO: concepto opcional
     const conceptoRaw = String(req.body?.concepto || "").trim();
     const concepto = conceptoRaw.length ? conceptoRaw.slice(0, 120) : null;
 
@@ -48,7 +45,7 @@ export async function transferir(req, res) {
       return fail(res, `Monto excede el máximo por transferencia (${MAX_TRANSFER})`, 400);
     }
 
-    // ✅ ORIGEN SIEMPRE desde el token
+    // ORIGEN SIEMPRE desde el token
     const origen = await getCuentaByUserId(req.userId);
     if (!origen) return fail(res, "Cuenta origen no encontrada", 404);
 
@@ -139,7 +136,7 @@ export async function transferir(req, res) {
           desde: origen.numero_cuenta,
           destino: destino.numero_cuenta,
           monto,
-          concepto, // ✅ opcional (para debug / info)
+          concepto,
           guardar_beneficiario: guardar,
           beneficiarioGuardado,
         },

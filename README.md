@@ -63,13 +63,13 @@ El frontend se encuentra en /frontend y se ejecuta con Live Server.
 
 ---------------------------------------
 
-Autenticación:
+# Autenticación:
 - Los endpoints privados requieren:
 
     Authorization: Bearer <token>
     ** El token expira en 10 minutos.**
 
-Funcionalidades:
+# Funcionalidades:
 - Registro e inicio de sesión
 - Manejo de cuenta y saldo
 - Transferencias con validaciones
@@ -81,12 +81,3 @@ Reglas de negocio:
 - Transferencias con saldo suficiente
 - No transferencias a la misma cuenta
 - Beneficiarios únicos por usuario
-
----------------------------------------
-
-## Notas
-    Proyecto ejecutado en entorno local
-
-Lógica central en backend
-
-Frontend solo consume la API

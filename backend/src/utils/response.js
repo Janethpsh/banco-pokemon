@@ -1,5 +1,3 @@
-// backend/src/utils/response.js
-
 export function ok(res, data = {}, message = "OK", status = 200) {
   return res.status(status).json({
     ok: true,
@@ -14,7 +12,6 @@ export function fail(res, message = "Error", status = 500, debug = null) {
     message,
   };
 
-  // Solo muestra debug si SHOW_DEBUG=true en el .env
   const showDebug = String(process.env.SHOW_DEBUG || "").toLowerCase() === "true";
 
   if (showDebug && debug) {

@@ -1,4 +1,3 @@
-// backend/src/beneficiaries/controller.js
 import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { ok, fail } from "../utils/response.js";
@@ -49,7 +48,6 @@ export async function crear(req, res) {
       return fail(res, "No puedes guardarte a ti mismo como favorito", 400);
     }
 
-    // ¿Ya existe?
     const [exist] = await pool.query(
       `SELECT b.id, b.alias
        FROM beneficiarios b
@@ -59,7 +57,6 @@ export async function crear(req, res) {
     );
 
     if (exist.length) {
-      // Sin duplicar (tu regla)
       return ok(
         res,
         {

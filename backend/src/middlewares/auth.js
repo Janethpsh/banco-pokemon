@@ -1,4 +1,3 @@
-// backend/src/middlewares/auth.js
 import jwt from "jsonwebtoken";
 
 export function authRequired(req, res, next) {
@@ -22,10 +21,8 @@ export function authRequired(req, res, next) {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ lo que ya usas
     req.userId = payload.userId;
 
-    // ✅ nombres consistentes con controllers
     req.userNumeroCuenta = payload.numero_cuenta;
 
     next();

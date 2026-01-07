@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pokémon Bank</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <div class="poke"></div>
+        <div>
+          <h1>Pokémon Bank</h1>
+        </div>
+      </div>
+
+      <div class="pill">
+        <span class="muted">Sesión:</span>
+        <span id="timer">--:--</span>
+        <button id="btnLogout" class="btn small" style="display:none;">Salir</button>
+      </div>
+    </header>
+
+    <!-- AUTH SCREEN -->
+    <section id="screenAuth" class="card">
+      <div class="grid2">
+        <div id="loginPanel" class="panel">
+          <h2>Iniciar sesión</h2>
+
+          <label class="lbl">Correo</label>
+          <input id="loginCorreo" class="inp" type="email" placeholder="correo@gmail.com" />
+
+          <label class="lbl">Password</label>
+          <input id="loginPass" class="inp" type="password" placeholder="********" />
+
+          <button id="btnLogin" class="btn">Login</button>
+          <div id="loginMsg" class="msg"></div>
+
+          <div class="switch">
+            <a href="#" id="linkToRegister">¿No tienes cuenta? Registrarse</a>
+          </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="registerPanel" class="panel" style="display:none;">
+          <h2>Registro</h2>
+
+          <label class="lbl">Nombre completo</label>
+          <input id="regNombre" class="inp" type="text" placeholder="Nombre Apellido" />
+
+          <label class="lbl">Correo</label>
+          <input id="regCorreo" class="inp" type="email" placeholder="nuevo@gmail.com" />
+
+          <label class="lbl">Password</label>
+          <input id="regPass" class="inp" type="password" placeholder="Password123" />
+
+          <button id="btnRegister" class="btn warn">Registrar</button>
+          <div id="regMsg" class="msg"></div>
+
+          <div class="switch">
+            <a href="#" id="linkToLogin">¿Ya tienes cuenta? Iniciar sesión</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APP SCREEN -->
+    <section id="screenApp" class="card" style="display:none;">
+      <div class="grid2">
+        <div class="panel">
+          <h2>Mi cuenta</h2>
+          <div class="row">
+            <div>
+              <div class="muted">Número de cuenta</div>
+              <div id="numeroCuenta" class="strong">---</div>
+            </div>
+            <div>
+              <div class="muted">Saldo</div>
+              <div id="saldo" class="strong">0</div>
+            </div>
+          </div>
+
+          <hr class="hr" />
+
+          <h3>Agregar dinero</h3>
+          <input id="cashMonto" class="inp" type="number" placeholder="Monto" />
+          <button id="btnCash" class="btn">Agregar</button>
+          <div id="cashMsg" class="msg"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Transferir</h2>
+
+          <label class="lbl">Cuenta destino (PK-...)</label>
+          <input id="txDestino" class="inp" type="text" placeholder="PK-0000000000" />
+
+          <label class="lbl">Monto</label>
+          <input id="txMonto" class="inp" type="number" placeholder="0" />
+
+          <div class="row" style="gap:10px; align-items:center;">
+            <input id="txGuardar" type="checkbox" />
+            <span>Guardar como favorito</span>
+          </div>
+
+          <label class="lbl">Alias (solo si guardas)</label>
+          <input id="txAlias" class="inp" type="text" placeholder="Mi compa" />
+          <label class="lbl">Concepto (opcional)</label>
+          <input id="txConcepto" class="inp" type="text" placeholder="Ej: Renta, Regalo, Pago..." />
+
+          <button id="btnTransfer" class="btn danger">Transferir</button>
+          <div id="txMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:16px;">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <h2>Favoritos</h2>
+            <button id="btnLoadBenef" class="btn small">Actualizar</button>
+          </div>
+          <div id="benefMsg" class="msg"></div>
+          <div id="benefList" class="list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <h2>Movimientos</h2>
+            <div class="row" style="gap:8px;">
+              <button id="btnPrev" class="btn small">◀</button>
+              <span id="pageInfo" class="muted">1 / 1</span>
+              <button id="btnNext" class="btn small">▶</button>
+              <button id="btnLoadMov" class="btn small">Actualizar</button>
+            </div>
+          </div>
+          <div id="movMsg" class="msg"></div>
+          <div id="movList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODAL CONFIRM TRANSFER -->
+    <div id="modalOverlay" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <h3>Confirmar transferencia</h3>
+        <p id="modalText" class="muted"></p>
+        <div class="row" style="justify-content:flex-end; gap:10px; margin-top:14px;">
+          <button id="btnModalCancel" class="btn small">Cancelar</button>
+          <button id="btnModalOk" class="btn small danger">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="foot muted">
+      Pokémon Bank by Janeth Pacheco :b
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
