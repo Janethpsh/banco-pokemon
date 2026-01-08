@@ -58,7 +58,7 @@ const el = {
   btnModalOk: $("btnModalOk"),
 };
 
-// estado 
+// estado
 const state = {
   movPage: 1,
   movTotalPages: 1,
@@ -98,12 +98,25 @@ async function api(path, { method = "GET", body = null, auth = true } = {}) {
     body: body ? JSON.stringify(body) : null,
   });
 
-  const data = await res.json().catch(() => ({}));
+  // Intentar leer JSON, si no hay, no truena
+  let data = {};
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+
+  // Si expira sesión en endpoints protegidos
+  if (res.status === 401 && auth) {
+    logout(true);
+    throw data;
+  }
+
   if (!res.ok) throw data;
   return data;
 }
 
-// Reloj (timer) de 10 minutosss
+// Reloj (timer) 10 min
 function stopTimer() {
   if (state.timerInterval) clearInterval(state.timerInterval);
   state.timerInterval = null;
@@ -151,7 +164,7 @@ function showRegisterPanel() {
   setText(el.loginMsg, "");
 }
 
-// -------- UI navegación --------
+// UI navegación
 function showAuth() {
   el.app.style.display = "none";
   el.auth.style.display = "block";
@@ -172,7 +185,7 @@ function logout(expired = false) {
   if (expired) alert("Tu sesión expiró (10 minutos). Vuelve a iniciar sesión.");
 }
 
-// -------- modal confirmación --------
+// modal confirmación
 function openTransferModal({ destino_numero_cuenta, monto, guardar_beneficiario, alias, concepto }) {
   state.pendingTransfer = { destino_numero_cuenta, monto, guardar_beneficiario, alias, concepto };
 
@@ -193,7 +206,7 @@ function closeTransferModal() {
   state.pendingTransfer = null;
 }
 
-// favoritosss o beneficiarios :)
+// favoritos
 async function borrarFavorito(id) {
   if (!id) return setText(el.benefMsg, "No llegó id del favorito", true);
   if (!confirm("¿Seguro que quieres borrar este favorito?")) return;
@@ -204,7 +217,8 @@ async function borrarFavorito(id) {
     setText(el.benefMsg, "Favorito eliminado");
     await loadBeneficiarios();
   } catch (e) {
-    setText(el.benefMsg, e.message || "Error al borrar", true);
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.benefMsg, (e.message || "Error al borrar") + (extra ? " | " + extra : ""), true);
     console.error(e);
   }
 }
@@ -216,7 +230,6 @@ function usarFavorito(b) {
   setText(el.txMsg, `Favorito seleccionado: ${b?.alias || "(sin alias)"} (${b?.numero_cuenta || ""})`);
 }
 
-// render
 window.usarFavorito = usarFavorito;
 window.borrarFavorito = borrarFavorito;
 
@@ -335,7 +348,7 @@ async function doLogin() {
   });
 
   const token = r?.data?.token;
-  if (!token) throw { message: "No llegó token en la respuesta del backend" };
+  if (!token) throw { message: "No llegó token en la respuesta del backend", ...r };
 
   session.token = token;
   setExpiryFromLoginResponse(r);
@@ -407,20 +420,37 @@ async function doTransferAskConfirm() {
 
 // eventos
 $("btnLogin").addEventListener("click", () =>
-  doLogin().catch((e) => (setText(el.loginMsg, e.message || "Error login", true), console.error(e)))
+  doLogin().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.loginMsg, (e.message || "Error login") + (extra ? " | " + extra : ""), true);
+    console.error("LOGIN ERROR FULL:", e);
+  })
 );
+
 $("btnRegister").addEventListener("click", () =>
-  doRegister().catch((e) => (setText(el.regMsg, e.message || "Error registro", true), console.error(e)))
+  doRegister().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.regMsg, (e.message || "Error registro") + (extra ? " | " + extra : ""), true);
+    console.error("REGISTER ERROR FULL:", e);
+  })
 );
 
 el.btnLogout.addEventListener("click", () => logout(false));
 
 $("btnCash").addEventListener("click", () =>
-  doCashIn().catch((e) => (setText(el.cashMsg, e.message || "Error cash-in", true), console.error(e)))
+  doCashIn().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.cashMsg, (e.message || "Error cash-in") + (extra ? " | " + extra : ""), true);
+    console.error(e);
+  })
 );
 
 $("btnTransfer").addEventListener("click", () =>
-  doTransferAskConfirm().catch((e) => (setText(el.txMsg, e.message || "Error transferencia", true), console.error(e)))
+  doTransferAskConfirm().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.txMsg, (e.message || "Error transferencia") + (extra ? " | " + extra : ""), true);
+    console.error(e);
+  })
 );
 
 // modal buttons
@@ -438,10 +468,15 @@ el.btnModalOk.addEventListener("click", async () => {
   if (p.concepto) body.concepto = p.concepto;
 
   closeTransferModal();
-  await performTransfer(body).catch((e) => (setText(el.txMsg, e.message || "Error transferencia", true), console.error(e)));
+
+  await performTransfer(body).catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.txMsg, (e.message || "Error transferencia") + (extra ? " | " + extra : ""), true);
+    console.error(e);
+  });
 });
 
-// links del login y el register (en el inicio)
+// links del login y register
 el.linkToRegister.addEventListener("click", (ev) => {
   ev.preventDefault();
   showRegisterPanel();
@@ -452,10 +487,19 @@ el.linkToLogin.addEventListener("click", (ev) => {
 });
 
 $("btnLoadBenef").addEventListener("click", () =>
-  loadBeneficiarios().catch((e) => (setText(el.benefMsg, e.message || "Error favoritos", true), console.error(e)))
+  loadBeneficiarios().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.benefMsg, (e.message || "Error favoritos") + (extra ? " | " + extra : ""), true);
+    console.error(e);
+  })
 );
+
 $("btnLoadMov").addEventListener("click", () =>
-  loadMovimientos().catch((e) => (setText(el.movMsg, e.message || "Error movimientos", true), console.error(e)))
+  loadMovimientos().catch((e) => {
+    const extra = e?.debug?.sqlMessage || e?.debug?.message || e?.debug?.code || "";
+    setText(el.movMsg, (e.message || "Error movimientos") + (extra ? " | " + extra : ""), true);
+    console.error(e);
+  })
 );
 
 $("btnPrev").addEventListener("click", async () => {
@@ -463,13 +507,14 @@ $("btnPrev").addEventListener("click", async () => {
   state.movPage--;
   await loadMovimientos();
 });
+
 $("btnNext").addEventListener("click", async () => {
   if (state.movPage >= state.movTotalPages) return;
   state.movPage++;
   await loadMovimientos();
 });
 
-// boot para el token
+// boot
 (function boot() {
   const hasToken = !!session.token;
   const expOk = session.expiresAt && session.expiresAt > Date.now();
